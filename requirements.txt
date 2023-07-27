@@ -1,0 +1,8 @@
+transformers
+pandas
+numpy
+torch
+tensorflow
+datasets
+fuzzywuzzy
+accelerate -U
