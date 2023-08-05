@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
+import time
 
 # Load Dataset
 file_path = 'Final_Dataset.csv'
@@ -50,6 +51,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=5e-5)
 # Training Loop
 model.train()
 for epoch in range(3):
+    start_time = time.time()   # track start time
     for batch in train_dataloader:
         inputs, masks, labels = batch
         optimizer.zero_grad()
@@ -57,8 +59,15 @@ for epoch in range(3):
         loss = outputs.loss
         loss.backward()
         optimizer.step()
+        end_time = time.time()   #track end time
+        epoch_time = end_time - start_time   # Time taken to train the model
+    
+        print(f"Time taken for epoch {epoch+1}: {epoch_time:.2f} seconds")
 
+total_end_time = time.time()
+total_time = total_end_time - start_time
 
+print(f"Total training time: {total_time:.2f} seconds")
 # Evaluation
 model.eval()
 test_predictions = []
@@ -84,3 +93,60 @@ print("Test Precision:", precision)
 print("Test Recall:", recall)
 print("Test F1-score:", f1)
 print("Test ROC-AUC:", roc_auc)
+
+# Training Loop with attention masks
+num_epochs = 5
+for epoch in range(num_epochs):
+    model.train()
+    train_loss = 0
+    train_predictions = []
+    train_true_labels = []
+    for batch in train_dataloader:
+        inputs, masks, labels = batch
+        optimizer.zero_grad()
+        outputs = model(inputs, attention_mask=masks, labels=labels)
+        loss = outputs.loss
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+        logits = outputs.logits
+        predictions = torch.argmax(F.softmax(logits, dim=1), dim=1)
+        train_predictions.extend(predictions.tolist())
+        train_true_labels.extend(labels.tolist())
+    
+    # Training Metrics
+    train_accuracy = accuracy_score(train_true_labels, train_predictions)
+    train_precision = precision_score(train_true_labels, train_predictions)
+    train_recall = recall_score(train_true_labels, train_predictions)
+    train_f1 = f1_score(train_true_labels, train_predictions)
+
+    print(f"Epoch {epoch+1}/{num_epochs}")
+    print(f"Training Loss: {train_loss/len(train_dataloader)}")
+    print(f"Training Accuracy: {train_accuracy}")
+    print(f"Training Precision: {train_precision}")
+    print(f"Training Recall: {train_recall}")
+    print(f"Training F1-score: {train_f1}")
+    
+    # Validation Loop
+    model.eval()
+    val_predictions = []
+    val_true_labels = []
+    with torch.no_grad():
+        for batch in val_dataloader:
+            inputs, masks, labels = batch
+            outputs = model(inputs, attention_mask=masks)
+            logits = outputs.logits
+            predictions = torch.argmax(F.softmax(logits, dim=1), dim=1)
+            val_predictions.extend(predictions.tolist())
+            val_true_labels.extend(labels.tolist())
+    
+    # Validation Metrics
+    val_accuracy = accuracy_score(val_true_labels, val_predictions)
+    val_precision = precision_score(val_true_labels, val_predictions)
+    val_recall = recall_score(val_true_labels, val_predictions)
+    val_f1 = f1_score(val_true_labels, val_predictions)
+
+    print(f"Validation Accuracy: {val_accuracy}")
+    print(f"Validation Precision: {val_precision}")
+    print(f"Validation Recall: {val_recall}")
+    print(f"Validation F1-score: {val_f1}\n")
