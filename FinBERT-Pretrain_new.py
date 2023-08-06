@@ -95,7 +95,7 @@ print("Test F1-score:", f1)
 print("Test ROC-AUC:", roc_auc)
 
 # Training Loop with attention masks
-num_epochs = 5
+num_epochs = 4
 for epoch in range(num_epochs):
     model.train()
     train_loss = 0
