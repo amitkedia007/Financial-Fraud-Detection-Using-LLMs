@@ -13,10 +13,10 @@ from keras.layers import GlobalAveragePooling1D
 from nltk.tokenize import sent_tokenize
 
 # Constants
-MAX_NB_WORDS = 20000
-EMBEDDING_DIM = 100
-MAX_SENT_LENGTH = 50
-MAX_SENTS = 15
+MAX_NB_WORDS = 3000000  
+EMBEDDING_DIM = 300   
+MAX_SENT_LENGTH = 50   
+MAX_SENTS = 15     
 
 # Reading the data
 data = pd.read_csv('Final_Dataset.csv')
@@ -54,21 +54,21 @@ y_test = np.array(y_test, dtype=np.int32)
 # Word-level attention
 word_input = Input(shape=(MAX_SENT_LENGTH,), dtype='int32')
 word_sequences = Embedding(MAX_NB_WORDS, EMBEDDING_DIM)(word_input)
-word_lstm = LSTM(128, return_sequences=True)(word_sequences)
+word_lstm = LSTM(150, return_sequences=True)(word_sequences)
 word_attention = GlobalAveragePooling1D()(word_lstm)
 word_encoder = Model(word_input, word_attention)
 
 # Sentence-level attention
 sent_input = Input(shape=(MAX_SENTS, MAX_SENT_LENGTH), dtype='int32')
 sent_encoder = TimeDistributed(word_encoder)(sent_input)
-sent_lstm = LSTM(128, return_sequences=True)(sent_encoder)
+sent_lstm = LSTM(150, return_sequences=True)(sent_encoder)
 sent_attention = GlobalAveragePooling1D()(sent_lstm)
 preds = Dense(1, activation='sigmoid')(sent_attention)
 model = Model(sent_input, preds)
 
 # Compile and train the model
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=50)
+model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=17, batch_size=32)
 
 # Predicting the classes for the test set
 y_pred = model.predict(X_test)
