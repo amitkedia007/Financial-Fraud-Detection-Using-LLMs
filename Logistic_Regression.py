@@ -4,6 +4,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve, average_precision_score
+import seaborn as sns
+import numpy as np
+import itertools
 
 
 file_path = 'Final_Dataset.csv'
@@ -54,3 +59,59 @@ print("test Accuracy:", test_accuracy)
 print("test Precision:", test_precision)
 print("test Recall:", test_recall)
 print("test F1-score:", test_f1)
+
+
+def plot_confusion_matrix(y_true, y_pred, classes, title='Confusion matrix', cmap=plt.cm.Blues):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes)
+    plt.yticks(tick_marks, classes)
+    plt.colorbar()
+
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, cm[i, j], horizontalalignment="center", color="white" if cm[i, j] > thresh else "black")
+
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+# Function to plot ROC curve
+def plot_roc_curve(y_true, y_prob):
+    fpr, tpr, thresholds = roc_curve(y_true, y_prob)
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+
+# Function to plot precision-recall curve
+def plot_precision_recall_curve(y_true, y_prob):
+    precision, recall, _ = precision_recall_curve(y_true, y_prob)
+    average_precision = average_precision_score(y_true, y_prob)
+    plt.figure()
+    plt.plot(recall, precision, lw=2, label='Average Precision = %0.2f' % average_precision)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+    plt.legend(loc="upper right")
+
+# Evaluate Model on Validation Set:
+y_val_prob = logistic_model.predict_proba(X_val_tfidf)[:, 1]
+
+# Plotting the confusion matrix, ROC curve, and precision-recall curve
+plt.figure(figsize=(6, 5))
+plot_confusion_matrix(y_val, y_val_pred, classes=['Non-Fraudulent', 'Fraudulent'])
+plt.show()
+
+plot_roc_curve(y_val, y_val_prob)
+plt.show()
+
+plot_precision_recall_curve(y_val, y_val_prob)
+plt.show()
