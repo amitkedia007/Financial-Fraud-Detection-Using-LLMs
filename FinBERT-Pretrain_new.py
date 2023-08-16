@@ -8,6 +8,10 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 import time
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
+
 
 # Load Dataset
 file_path = 'Final_Dataset.csv'
@@ -23,6 +27,8 @@ text_data = dataset['Fillings'].tolist()
 max_length = 512
 encoded_inputs = tokenizer(text_data, padding=True, truncation=True, max_length=max_length, return_tensors="pt")
 attention_masks = encoded_inputs['attention_mask']
+
+print(tokenizer)
 
 # Split the Dataset into Training, Validation, and Test Sets
 train_inputs, temp_inputs, train_labels, temp_labels, train_masks, temp_masks = train_test_split(
@@ -150,3 +156,25 @@ for epoch in range(num_epochs):
     print(f"Validation Precision: {val_precision}")
     print(f"Validation Recall: {val_recall}")
     print(f"Validation F1-score: {val_f1}\n")
+
+#1. Plot the Confusion Matrix
+cm = confusion_matrix(test_true_labels, test_predictions)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Fraudulent", "Fraudulent"])
+disp.plot()
+plt.title('Confusion Matrix for Test Data')
+plt.show()
+
+# 2. Plot the ROC Curve
+fpr, tpr, _ = roc_curve(test_true_labels, test_predictions)
+roc_auc = auc(fpr, tpr)
+roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='BERT Model')
+roc_display.plot()
+plt.title('ROC Curve for Test Data')
+plt.show()
+
+# 3. Plot the Precision-Recall Curve
+precision_curve, recall_curve, _ = precision_recall_curve(test_true_labels, test_predictions)
+pr_display = PrecisionRecallDisplay(precision=precision_curve, recall=recall_curve)
+pr_display.plot()
+plt.title('Precision-Recall Curve for Test Data')
+plt.show()
