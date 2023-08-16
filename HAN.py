@@ -11,6 +11,10 @@ from tensorflow.keras.layers import TimeDistributed
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from keras.layers import GlobalAveragePooling1D
 from nltk.tokenize import sent_tokenize
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
+
 
 # Constants
 MAX_NB_WORDS = 3000000  
@@ -85,3 +89,30 @@ print("Validation Precision:", precision)
 print("Validation Recall:", recall)
 print("Validation F1-score:", f1)
 
+# Predicting the probabilities for the test set
+y_pred_probs = model.predict(X_test)
+
+# Use a threshold of 0.5 to determine class labels
+y_pred_classes = (y_pred_probs > 0.5).astype(int).flatten()
+
+# 1. Plot the Confusion Matrix
+cm = confusion_matrix(y_test, y_pred_classes)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Fraudulent", "Fraudulent"])
+disp.plot()
+plt.title('Confusion Matrix')
+plt.show()
+
+# 2. Plot the ROC Curve
+fpr, tpr, _ = roc_curve(y_test, y_pred_probs)
+roc_auc = auc(fpr, tpr)
+roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='Model')
+roc_display.plot()
+plt.title('ROC Curve')
+plt.show()
+
+# 3. Plot the Precision-Recall Curve
+precision, recall, _ = precision_recall_curve(y_test, y_pred_probs)
+pr_display = PrecisionRecallDisplay(precision=precision, recall=recall)
+pr_display.plot()
+plt.title('Precision-Recall Curve')
+plt.show()
