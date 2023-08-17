@@ -10,6 +10,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 from keras.regularizers import l2
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, RocCurveDisplay, precision_recall_curve, PrecisionRecallDisplay, confusion_matrix
 
 
 # Assuming you've loaded the data into df
@@ -120,3 +122,79 @@ print(f"Test Precision: {test_precision:.4f}")
 print(f"Test Recall: {test_recall:.4f}")
 print(f"Test F1-score: {test_f1:.4f}")
 
+# Define and Train the Model (ReLU Activation)
+model_relu = Sequential()
+model_relu.add(Dense(256, activation='relu', input_shape=(X_train.shape[1],)))
+model_relu.add(Dense(128, activation='relu'))
+model_relu.add(Dense(64, activation='relu'))
+model_relu.add(Dense(1, activation='sigmoid'))
+model_relu.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+
+early_stop = EarlyStopping(monitor='val_loss', patience=3)
+
+history_relu = model_relu.fit(
+    X_train, y_train, 
+    epochs=20, 
+    batch_size=32, 
+    validation_data=(X_val, y_val), 
+    callbacks=[early_stop]
+)
+
+# Define and Train the Model (Tanh Activation)
+model_tanh = Sequential()
+model_tanh.add(Dense(256, activation='tanh', input_shape=(X_train.shape[1],)))
+model_tanh.add(Dense(128, activation='tanh'))
+model_tanh.add(Dense(64, activation='tanh'))
+model_tanh.add(Dense(1, activation='sigmoid'))
+model_tanh.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+
+history_tanh = model_tanh.fit(
+    X_train, y_train, 
+    epochs=20, 
+    batch_size=32, 
+    validation_data=(X_val, y_val), 
+    callbacks=[early_stop]
+)
+
+# Evaluate and Plot Graphs
+def evaluate_and_plot(model, X_test, y_test):
+    y_pred = (model.predict(X_test) > 0.5).astype("int32")
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1-score: {f1:.4f}")
+    
+    # Plot Confusion Matrix
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Fraudulent", "Fraudulent"])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix')
+    plt.show()
+
+    # Plot ROC Curve
+    y_probas = model.predict(X_test)
+    fpr, tpr, _ = roc_curve(y_test, y_probas)
+    roc_auc = auc(fpr, tpr)
+    roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='Model')
+    roc_display.plot()
+    plt.title('ROC Curve')
+    plt.show()
+
+    # Plot Precision-Recall Curve
+    precision_curve, recall_curve, _ = precision_recall_curve(y_test, y_probas)
+    pr_display = PrecisionRecallDisplay(precision=precision_curve, recall=recall_curve)
+    pr_display.plot()
+    plt.title('Precision-Recall Curve')
+    plt.show()
+
+print("Results for ReLU Activation:")
+evaluate_and_plot(model_relu, X_test, y_test)
+
+print("Results for Tanh Activation:")
+evaluate_and_plot(model_tanh, X_test, y_test)
