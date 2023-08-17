@@ -7,6 +7,10 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 import time
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay, PrecisionRecallDisplay
+import numpy as np
 
 file_path = 'Final_Dataset.csv' 
 dataset = pd.read_csv(file_path)
@@ -140,3 +144,57 @@ def evaluate(model, dataloader):
     return accuracy, precision, recall, f1
 
 evaluate(model, val_dataloader)
+
+def plot_graphs(true_labels, predictions, probas=None):
+    # 1. Plot the Confusion Matrix
+    cm = confusion_matrix(true_labels, predictions)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Fraudulent", "Fraudulent"])
+    disp.plot()
+    plt.title('Confusion Matrix for Test Data')
+    plt.show()
+
+    if probas is not None:
+        # 2. Plot the ROC Curve
+        fpr, tpr, _ = roc_curve(true_labels, probas[:, 1])
+        roc_auc = auc(fpr, tpr)
+        roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name='GPT-2 Model')
+        roc_display.plot()
+        plt.title('ROC Curve for Test Data')
+        plt.show()
+
+        # 3. Plot the Precision-Recall Curve
+        precision_curve, recall_curve, _ = precision_recall_curve(true_labels, probas[:, 1])
+        pr_display = PrecisionRecallDisplay(precision=precision_curve, recall=recall_curve)
+        pr_display.plot()
+        plt.title('Precision-Recall Curve for Test Data')
+        plt.show()
+
+def evaluate_and_plot(model, dataloader):
+    model.eval()
+    predictions, true_labels, probabilities = [], [], []
+
+    with torch.no_grad():
+        for batch in dataloader:
+            inputs, masks, labels = batch
+            outputs = model(inputs, attention_mask=masks)
+            logits = outputs.logits
+            preds = torch.argmax(logits, dim=1)
+            probabilities.extend(F.softmax(logits, dim=1).tolist())
+            predictions.extend(preds.tolist())
+            true_labels.extend(labels.tolist())
+
+    accuracy = accuracy_score(true_labels, predictions)
+    precision = precision_score(true_labels, predictions, average='weighted')
+    recall = recall_score(true_labels, predictions, average='weighted')
+    f1 = f1_score(true_labels, predictions, average='weighted')
+
+    print(f'Accuracy: {accuracy}')
+    print(f'Precision: {precision}')
+    print(f'Recall: {recall}')
+    print(f'F1 Score: {f1}')
+    
+    plot_graphs(true_labels, predictions, np.array(probabilities))
+
+    return accuracy, precision, recall, f1
+
+evaluate_and_plot(model, test_dataloader)
