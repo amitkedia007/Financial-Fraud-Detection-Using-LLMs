@@ -12,6 +12,8 @@
 
 **Structure:** Each dataset entry contains details such as Central Index Key (CIK), filing year, company name, and a categorical indicator of fraud.
 
+**Final Dataset:** Finally the dataset is out on Kaggle do check it out [here..](https://www.kaggle.com/datasets/amitkedia/financial-statement-fraud-data/)
+
 ## Data Preprocessing
 
 Preprocessing steps involve text cleaning, tokenization, and transforming data into machine-readable formats, ensuring balanced and fair model training.
