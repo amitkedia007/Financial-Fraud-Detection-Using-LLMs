@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Introduction:** This project utilizes machine learning, deep learning, and Large Language Models (LLMs) to detect financial fraud. It's based on a comprehensive dataset derived from financial filings to the U.S. Securities and Exchange Commission (SEC), aiming to compare and enhance AI models in identifying fraudulent financial activities. (For more information checkout the pdf in the repo)
+**Introduction:** This project utilizes machine learning, deep learning, and Large Language Models (LLMs) to detect financial fraud. It's based on a comprehensive dataset derived from financial filings to the U.S. Securities and Exchange Commission (SEC), aiming to compare and enhance AI models in identifying fraudulent financial activities. (For more information checkout the [pdf](https://github.com/amitkedia007/Financial-Fraud-Detection-Using-LLMs/blob/main/Detailed_Report_on_financial_fraud_detection.pdf) in the repo)
 
 **Objective:** The goal is to foster a collaborative platform where data scientists and researchers can develop, test, and improve AI models for detecting financial fraud.
 
