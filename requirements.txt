@@ -1,11 +1,10 @@
-pandas
-numpy
-torch
-tensorflow
-fuzzywuzzy
-accelerate -U
---upgrade pip
+pandas==1.5.3
+numpy==1.23.5
 torch==1.13.1
+tensorflow==2.11.0
+fuzzywuzzy==0.18.0
+accelerate==0.19.0
 torchdata==0.5.1
 transformers==4.27.2
 datasets==2.11.0
+

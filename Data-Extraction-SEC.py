@@ -3,6 +3,7 @@
 # Appending the CIK number to the company name.
 
 
+import argparse
 import pandas as pd
 from fuzzywuzzy import fuzz, process
 
@@ -21,13 +22,22 @@ df_validation = pd.DataFrame(dataset['validation'])
 df_test = pd.DataFrame(dataset['test'])
 
 
-file_path = "C://DissData/sec.gov_Archives_edgar_cik-lookup-data.txt"
+parser = argparse.ArgumentParser(description="Match company names to CIK numbers")
+parser.add_argument("--cik_lookup", default="sec.gov_Archives_edgar_cik-lookup-data.txt",
+                    help="Path to CIK lookup text file")
+parser.add_argument("--fraud_excel", default="Fraud_Companies_dataset.xlsx",
+                    help="Path to Excel file containing fraud companies")
+parser.add_argument("--output", default="fraud_companies_with_cik.csv",
+                    help="Path for output CSV")
+args = parser.parse_args()
+
+file_path = args.cik_lookup
 
 # Read the file line by line
 with open(file_path, 'r') as file:
     lines = file.readlines()
-    
-fraud_companies = pd.read_excel("C://DissData//Fraud_Companies_dataset.xlsx")
+
+fraud_companies = pd.read_excel(args.fraud_excel)
 
 data_list = [line.rsplit(":", 2)[:2] for line in lines]
 
@@ -60,7 +70,7 @@ fraud_companies["CIK Number"] = fraud_companies["Company Name"].apply(lambda x: 
 fraud_companies_to_save = fraud_companies[["Company Name", "CIK Number"]]
 
 # Save to CSV
-fraud_companies_to_save.to_csv("fraud_companies_with_cik.csv", index=False)
+fraud_companies_to_save.to_csv(args.output, index=False)
 
 
 

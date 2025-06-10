@@ -7,9 +7,6 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
-from keras.regularizers import l2
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
 import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc, RocCurveDisplay, precision_recall_curve, PrecisionRecallDisplay, confusion_matrix
 
