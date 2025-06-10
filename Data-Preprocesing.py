@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 from datasets import load_dataset
 import numpy as np
@@ -16,8 +17,13 @@ all_data = pd.concat([df_train, df_validation, df_test])
 # Convert 'cik' to string
 all_data['cik'] = all_data['cik'].astype(str)
 
+# Parse input arguments
+parser = argparse.ArgumentParser(description="Merge fraud company labels with EDGAR corpus")
+parser.add_argument("--fraud_csv", default="fraud_companies_with_cik.csv", help="Path to fraud companies CSV")
+args = parser.parse_args()
+
 # Load the fraud companies
-fraud_companies = pd.read_csv("C:/DissData/Dissertation-Brunel/fraud_companies_with_cik.csv")
+fraud_companies = pd.read_csv(args.fraud_csv)
 fraud_companies['CIK Number'] = fraud_companies['CIK Number'].astype(str)
 
 df1 = all_data
@@ -71,7 +77,7 @@ new_rows = df1[df1['cik'].isin(random_cik)]
 new_rows = new_rows.assign(Fraud='No')
 
 # Append these rows to the final DataFrame
-final_df = merged_df.append(new_rows, ignore_index=True)
+final_df = pd.concat([merged_df, new_rows], ignore_index=True)
 
 final_df['Fraud'].value_counts()  # we  got Yes: 1660,  No: 436 in the Fraud column
 
